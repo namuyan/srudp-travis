@@ -20,13 +20,13 @@ logger.addHandler(sh)
 
 
 class TestSocket(unittest.TestCase):
-    def setUp(self) -> None:
+    def setUp(self):
         logger.info("start")
         self.port1 = random.randint(10000, 30000)
         self.port2 = random.randint(10000, 30000)
         self.executor = ThreadPoolExecutor(4, thread_name_prefix="Thread")
 
-    def tearDown(self) -> None:
+    def tearDown(self):
         self.executor.shutdown(True)
         logger.info("end")
 
