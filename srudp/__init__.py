@@ -347,10 +347,12 @@ class SecureReliableSocket(socket):
 
         # success establish connection
         threading.Thread(target=self._backend, name="SRUDP", daemon=True).start()
+        log.debug("threading start")
         self.established = True
 
         # auto exit when program closed
         atexit.register(self.close)
+        log.debug("complete connect()")
 
     def _find_mtu_size(self) -> int:
         """confirm by submit real packet"""
@@ -395,6 +397,7 @@ class SecureReliableSocket(socket):
         last_packet: Optional[Packet] = None
         last_receive_time = time()
         last_ack_time = time()
+        log.debug("start srudp backend start")
 
         while not self.is_closed:
             r, _w, _x = select([super().fileno()], [], [], self.span)
