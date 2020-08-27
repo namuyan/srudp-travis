@@ -401,6 +401,7 @@ class SecureReliableSocket(socket):
 
         while not self.is_closed:
             r, _w, _x = select([super().fileno()], [], [], self.span)
+            log.debug("wait select %s %fs", r, time())
 
             # re-transmit
             if 0 < len(self.sender_buffer):
@@ -647,6 +648,7 @@ class SecureReliableSocket(socket):
 
     def sendall(self, data: bytes, flags: int = 0) -> None:
         """high-level method, use this instead of send()"""
+        log.debug("high-level sendall() called")
         assert flags == 0, "unrecognized flags"
         send_size = 0
         data = memoryview(data)
