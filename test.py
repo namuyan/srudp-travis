@@ -18,6 +18,8 @@ sh.setLevel(logging.DEBUG)
 sh.setFormatter(formatter)
 logger.addHandler(sh)
 
+IS_TRAVIS = os.getenv('TRAVIS') == 'true'
+IS_WINDOWS = os.name == 'nt'
 
 class TestSocket(unittest.TestCase):
     def setUp(self) -> None:
@@ -103,7 +105,7 @@ class TestSocket(unittest.TestCase):
 
     def test_ipv6(self):
         logger.info("start test_ipv6()")
-        if os.getenv('TRAVIS') == 'true':
+        if IS_TRAVIS:
             return unittest.skip("ipv6 isn't supported")
 
         sock1 = SecureReliableSocket(s.AF_INET6)
@@ -126,6 +128,8 @@ class TestSocket(unittest.TestCase):
         sock2.close()
 
     def test_asyncio(self):
+        if IS_TRAVIS and IS_WINDOWS:
+            return unittest.skip("travis's windows fail stream drain()")
         logger.info("start test_asyncio()")
         loop = asyncio.get_event_loop()
 
