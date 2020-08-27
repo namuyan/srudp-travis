@@ -20,18 +20,20 @@ logger.addHandler(sh)
 
 log = logging.getLogger()
 
+
 class TestSocket(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         logger.info("start")
         self.port1 = random.randint(10000, 30000)
         self.port2 = random.randint(10000, 30000)
         self.executor = ThreadPoolExecutor(4, thread_name_prefix="Thread")
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.executor.shutdown(True)
         logger.info("end")
 
     def test_basic(self):
+        log.info("start test_basic()")
         sock1 = SecureReliableSocket()
         sock2 = SecureReliableSocket()
         sock1.settimeout(5.0)
@@ -41,18 +43,14 @@ class TestSocket(unittest.TestCase):
         fut1 = self.executor.submit(sock1.connect, ("127.0.0.1", self.port1), self.port2)
         fut2 = self.executor.submit(sock2.connect, ("127.0.0.1", self.port2), self.port1)
 
-        log.info("wait fut1 fut2")
         fut1.result(10.0)
         fut2.result(10.0)
-        log.info("ok fut1 fut2")
 
         # connection info
         assert sock1.getpeername() == sock2.getsockname(), (sock1.getpeername(), sock2.getsockname())
 
         # normal sending
-        log.info("sending to %s", sock1)
         sock1.sendall(b"hello world")
-        log.info("recv from %s", sock2)
         assert sock2.recv(1024) == b"hello world"
 
         # broadcast sending
@@ -70,6 +68,7 @@ class TestSocket(unittest.TestCase):
         sock2.close()
 
     def test_big_size(self):
+        log.info("start test_big_size()")
         sock1 = SecureReliableSocket()
         sock2 = SecureReliableSocket()
         sock1.settimeout(5.0)
@@ -101,6 +100,7 @@ class TestSocket(unittest.TestCase):
         sock2.close()
 
     def test_ipv6(self):
+        log.info("start test_ipv6()")
         if os.getenv('TRAVIS') == 'true':
             return unittest.skip("ipv6 isn't supported")
 
@@ -124,12 +124,13 @@ class TestSocket(unittest.TestCase):
         sock2.close()
 
     def test_asyncio(self):
+        log.info("start test_asyncio()")
         loop = asyncio.get_event_loop()
 
         sock1 = SecureReliableSocket()
         sock2 = SecureReliableSocket()
-        sock1.settimeout(None)
-        sock2.settimeout(None)
+        sock1.setblocking(False)
+        sock2.setblocking(False)
 
         async def coro():
             fut1 = loop.run_in_executor(self.executor, sock1.connect, ("127.0.0.1", self.port1), self.port2)
