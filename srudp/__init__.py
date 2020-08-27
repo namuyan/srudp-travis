@@ -441,9 +441,9 @@ class SecureReliableSocket(socket):
                 packet = bin2packet(self._decrypt(data))
 
                 last_receive_time = time()
-                # log.debug("r<< %s", packet)
-            except ValueError:
-                # log.debug("decrypt failed len=%s..".format(data[:10]))
+                log.debug("r<< %s", packet)
+            except ValueError as e:
+                log.debug("decrypt failed len=%s..".format(data[:10]))
                 continue
             except (ConnectionResetError, OSError):
                 break
