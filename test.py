@@ -18,6 +18,7 @@ sh.setLevel(logging.DEBUG)
 sh.setFormatter(formatter)
 logger.addHandler(sh)
 
+log = logging.getLogger()
 
 class TestSocket(unittest.TestCase):
     def setUp(self):
@@ -40,14 +41,18 @@ class TestSocket(unittest.TestCase):
         fut1 = self.executor.submit(sock1.connect, ("127.0.0.1", self.port1), self.port2)
         fut2 = self.executor.submit(sock2.connect, ("127.0.0.1", self.port2), self.port1)
 
+        log.info("wait fut1 fut2")
         fut1.result(10.0)
         fut2.result(10.0)
+        log.info("ok fut1 fut2")
 
         # connection info
         assert sock1.getpeername() == sock2.getsockname(), (sock1.getpeername(), sock2.getsockname())
 
         # normal sending
+        log.info("sending to %s", sock1)
         sock1.sendall(b"hello world")
+        log.info("recv from %s", sock2)
         assert sock2.recv(1024) == b"hello world"
 
         # broadcast sending
