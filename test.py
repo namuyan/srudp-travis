@@ -96,7 +96,7 @@ class TestSocket(unittest.TestCase):
         sock2.close()
 
     def test_ipv6(self):
-        if not s.has_ipv6:
+        if os.getenv('TRAVIS') == 'true':
             return unittest.skip("ipv6 isn't supported")
 
         sock1 = SecureReliableSocket(s.AF_INET6)
