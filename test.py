@@ -135,23 +135,32 @@ class TestSocket(unittest.TestCase):
         sock2.setblocking(False)
 
         async def coro():
+            logger.info("wait connect()")
             fut1 = loop.run_in_executor(self.executor, sock1.connect, ("127.0.0.1", self.port1), self.port2)
             fut2 = loop.run_in_executor(self.executor, sock2.connect, ("127.0.0.1", self.port2), self.port1)
+            logger.info("await fut")
             await fut1
             await fut2
+            logger.info("finish await")
 
+            logger.info("open reader writer")
             reader1, writer1 = await asyncio.open_connection(sock=sock1)
             reader2, writer2 = await asyncio.open_connection(sock=sock2)
 
+            logger.info("write msg")
             writer1.write(b"nice world")
             await writer1.drain()
+            logger.info("drain msg")
             received = await reader2.read(1024)
+            logger.info("await read")
             assert received == b"nice world"
 
             writer1.close()
             writer2.close()
 
+        logger.info("coro start")
         loop.run_until_complete(coro())
+        logger.info("coro end")
         sleep(1.0)
         assert sock1.is_closed and sock2.is_closed, (sock1, sock2)
 
