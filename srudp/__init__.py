@@ -592,6 +592,7 @@ class SecureReliableSocket(socket):
     def send(self, data: bytes, flags: int = 0) -> int:
         """over write low-level method for compatibility"""
         assert flags == 0, "unrecognized flags"
+        log.debug("low-level send() called")
         self.sendall(data)
         return len(data)
 
@@ -652,8 +653,11 @@ class SecureReliableSocket(socket):
         while send_size < len(data):
             if not self._send_buffer_is_full():
                 self.sender_signal.set()
+            log.debug("try to send")
             if self.sender_signal.wait(self.timeout):
+                log.debug("ok, sending now")
                 send_size += self._send(data[send_size:])
+                log.debug("send ok %d", send_size)
             else:
                 log.debug("waiting for sending buffer have space..")
         log.debug("send operation success %sb", send_size)
