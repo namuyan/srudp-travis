@@ -347,12 +347,10 @@ class SecureReliableSocket(socket):
 
         # success establish connection
         threading.Thread(target=self._backend, name="SRUDP", daemon=True).start()
-        log.debug("threading start")
         self.established = True
 
         # auto exit when program closed
         atexit.register(self.close)
-        log.debug("complete connect()")
 
     def _find_mtu_size(self) -> int:
         """confirm by submit real packet"""
@@ -401,7 +399,6 @@ class SecureReliableSocket(socket):
 
         while not self.is_closed:
             r, _w, _x = select([super().fileno()], [], [], self.span)
-            log.debug("wait select %s %fs", r, time())
 
             # re-transmit
             if 0 < len(self.sender_buffer):
@@ -441,9 +438,9 @@ class SecureReliableSocket(socket):
                 packet = bin2packet(self._decrypt(data))
 
                 last_receive_time = time()
-                log.debug("r<< %s", packet)
-            except ValueError as e:
-                log.debug("decrypt failed len=%s..".format(data[:10]))
+                # log.debug("r<< %s", packet)
+            except ValueError:
+                # log.debug("decrypt failed len=%s..".format(data[:10]))
                 continue
             except (ConnectionResetError, OSError):
                 break
@@ -593,7 +590,6 @@ class SecureReliableSocket(socket):
     def send(self, data: bytes, flags: int = 0) -> int:
         """over write low-level method for compatibility"""
         assert flags == 0, "unrecognized flags"
-        log.debug("low-level send() called")
         self.sendall(data)
         return len(data)
 
@@ -648,18 +644,14 @@ class SecureReliableSocket(socket):
 
     def sendall(self, data: bytes, flags: int = 0) -> None:
         """high-level method, use this instead of send()"""
-        log.debug("high-level sendall() called")
         assert flags == 0, "unrecognized flags"
         send_size = 0
         data = memoryview(data)
         while send_size < len(data):
             if not self._send_buffer_is_full():
                 self.sender_signal.set()
-            log.debug("try to send")
             if self.sender_signal.wait(self.timeout):
-                log.debug("ok, sending now")
                 send_size += self._send(data[send_size:])
-                log.debug("send ok %d", send_size)
             else:
                 log.debug("waiting for sending buffer have space..")
         log.debug("send operation success %sb", send_size)
