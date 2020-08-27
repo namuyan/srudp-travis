@@ -18,8 +18,6 @@ sh.setLevel(logging.DEBUG)
 sh.setFormatter(formatter)
 logger.addHandler(sh)
 
-log = logging.getLogger()
-
 
 class TestSocket(unittest.TestCase):
     def setUp(self) -> None:
@@ -33,7 +31,7 @@ class TestSocket(unittest.TestCase):
         logger.info("end")
 
     def test_basic(self):
-        log.info("start test_basic()")
+        logger.info("start test_basic()")
         sock1 = SecureReliableSocket()
         sock2 = SecureReliableSocket()
         sock1.settimeout(5.0)
@@ -43,14 +41,18 @@ class TestSocket(unittest.TestCase):
         fut1 = self.executor.submit(sock1.connect, ("127.0.0.1", self.port1), self.port2)
         fut2 = self.executor.submit(sock2.connect, ("127.0.0.1", self.port2), self.port1)
 
+        logger.info("wait fut")
         fut1.result(10.0)
         fut2.result(10.0)
 
         # connection info
+        logger.info("getsockname")
         assert sock1.getpeername() == sock2.getsockname(), (sock1.getpeername(), sock2.getsockname())
 
         # normal sending
+        logger.info("sending")
         sock1.sendall(b"hello world")
+        logger.info("recv")
         assert sock2.recv(1024) == b"hello world"
 
         # broadcast sending
@@ -68,7 +70,7 @@ class TestSocket(unittest.TestCase):
         sock2.close()
 
     def test_big_size(self):
-        log.info("start test_big_size()")
+        logger.info("start test_big_size()")
         sock1 = SecureReliableSocket()
         sock2 = SecureReliableSocket()
         sock1.settimeout(5.0)
@@ -100,7 +102,7 @@ class TestSocket(unittest.TestCase):
         sock2.close()
 
     def test_ipv6(self):
-        log.info("start test_ipv6()")
+        logger.info("start test_ipv6()")
         if os.getenv('TRAVIS') == 'true':
             return unittest.skip("ipv6 isn't supported")
 
@@ -124,7 +126,7 @@ class TestSocket(unittest.TestCase):
         sock2.close()
 
     def test_asyncio(self):
-        log.info("start test_asyncio()")
+        logger.info("start test_asyncio()")
         loop = asyncio.get_event_loop()
 
         sock1 = SecureReliableSocket()
