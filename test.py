@@ -128,8 +128,8 @@ class TestSocket(unittest.TestCase):
         sock2.close()
 
     def test_asyncio(self):
-        if IS_TRAVIS and IS_WINDOWS:
-            return unittest.skip("travis's windows fail stream drain()")
+        #if IS_TRAVIS and IS_WINDOWS:
+        #    return unittest.skip("travis's windows fail stream drain()")
         logger.info("start test_asyncio()")
         loop = asyncio.get_event_loop()
 
